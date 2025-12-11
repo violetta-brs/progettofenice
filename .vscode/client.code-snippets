@@ -1,0 +1,15 @@
+{
+  "React component": {
+    "scope": "typescriptreact",
+    "prefix": "!component",
+    "body": [
+      "import { FC } from \"react\";\n",
+      "interface ${1:component-name}Props {}\n",
+      "const ${1:component-name}: FC<${1:component-name}Props> = () => {",
+      " return <p>New component ${1:component-name}</p>",
+      "};\n",
+      "export default ${1:component-name}",
+    ],
+    "description": "Synchronously sleep for x seconds",
+  },
+}
