@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="it-IT">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Scacchiera Locale</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cm-chessboard@8/assets/chessboard.min.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+
+  <body>
+    <h2>Scacchiera base</h2>
+
+    <div id="board" style="width: 400px; height: 400px"></div>
+
+    <script type="module">
+      import { Chessboard } from 'https://cdn.jsdelivr.net/npm/cm-chessboard@8/src/Chessboard.js';
+
+      const boardElement = document.getElementById('board');
+      const board = new Chessboard(boardElement, {
+        position: 'start',
+      });
+    </script>
+
+  </body>
+</html>
