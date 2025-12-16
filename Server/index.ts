@@ -2,7 +2,6 @@ import express, { Request, Response } from 'express';
 
 const app = express();
 
-// Middleware che intercetta tutte le richieste (qualsiasi metodo e path)
 app.use((req: Request, res: Response) => {
   res.status(200).send('Hello World');
 });
