@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import "../../lib/cm-chessboard/chessboard.css";
-import { Chessboard, FEN } from "../../lib/cm-chessboard/Chessboard.js";
+import { Chessboard, FEN } from "cm-chessboard";
+import 'cm-chessboard/assets/chessboard.css'; 
 import "./scacchiera.scss";
 
 function Scacchiera() {
