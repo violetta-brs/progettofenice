@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import './App.scss'
 import reactLogo from './assets/react.svg'
+import { getSomething } from './requests/example'
 import viteLogo from '/vite.svg'
 
 function App() {
@@ -20,6 +21,9 @@ function App() {
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
+        </button>
+        <button onClick={getSomething}>
+          Click to run the function
         </button>
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
