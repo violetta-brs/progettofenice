@@ -1,7 +1,6 @@
 import React from 'react';
 import Scacchiera from './components/scacchiera/scacchiera';
-import './App.scss'; // ← Anche App dovrebbe avere il suo SCSS
-import "./App.scss";
+import './App.scss'; 
 
 // Componente principale App
 function App() {
