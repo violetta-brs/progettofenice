@@ -3,17 +3,17 @@
   padding: 20px;
   text-align: center;
 
-  // & indica il selettore padre in SCSS
-  // Voglio modificare scacchiera-container__titolo 
-  &__titolo {
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: #333;
-  }
+h2 {
 
-  // Voglio modificare scacchiera-container__board
-  &__board {
-    margin: 0 auto;
-    
-  }
+  color: #000;
+  text-align: center;
+  font-size: 32px;
+  margin-bottom: 30px;
+
+}
+
+.scacchiera-board {
+  width: 400px;
+  height: 400px;
+}
 }
