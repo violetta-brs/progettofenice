@@ -1,0 +1,35 @@
+.chessboard-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.chessboard {
+  display: flex;
+  flex-wrap: wrap;
+  width: 600px;
+  height: 600px;
+  border: 2px solid #000;
+}
+
+.square {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 12.5%;        /* 100% / 8 caselle */
+  height: 12.5%;
+
+  &.light {
+    background-color: #d4a574;
+  }
+
+  &.dark {
+    background-color: #8b5a3c;
+  }
+}
+
+.piece {
+  width: 80%;
+  height: 80%;
+}
