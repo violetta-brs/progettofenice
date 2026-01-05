@@ -24,6 +24,9 @@ export default function CasualMove() {
        if (move) {
            setGame(newGame);
            
+        const fen = newGame.fen();
+        console.log("FEN attuale:", fen);
+
            setTimeout(() => {
                makeRandomMove(newGame);
            }, 500);
@@ -46,3 +49,4 @@ export default function CasualMove() {
 );
 
 }
+
