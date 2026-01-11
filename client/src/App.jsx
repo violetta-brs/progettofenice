@@ -16,16 +16,13 @@ function App() {
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
       </div>
-      <h1>Vite + React - HMR Test</h1>
+      <h1>Vite + React</h1>
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
         </button>
         <p>
-          ✅ HMR funziona! Modifica questo file e salva per vedere l'aggiornamento istantaneo.
-        </p>
-        <p style={{ color: 'green', fontWeight: 'bold' }}>
-          Server Express: http://localhost:3000
+          Edit <code>src/App.jsx</code> and save to test HMR
         </p>
       </div>
       <p className="read-the-docs">

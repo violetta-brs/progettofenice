@@ -104,7 +104,6 @@ export function getPossibleMoves(game: Chess, casella: string): string[] {
   // Ritorno solo le caselle di destinazione
   return mosse.map((m: { to: string }) => m.to);
 }
-
 // Dice come sta il gioco
 export function getGameStatus(game: Chess) {
   return {
@@ -117,3 +116,4 @@ export function getGameStatus(game: Chess) {
     fen: game.fen() // posizione
   };
 }
+

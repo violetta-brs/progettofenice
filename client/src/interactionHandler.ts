@@ -2,7 +2,6 @@ import type { Square } from 'chess.js';
 import { Chess } from 'chess.js';
 import { getGameStatus, getPossibleMoves, makeMove, makeRandomMove, type MoveResult } from '../../server/moveHandler.js';
 
-// Lo stato del gioco
 export interface InteractionState {
   selectedSquare: string | null; // casella selezionata
   possibleMoves: string[]; // dove posso muovermi
@@ -10,27 +9,23 @@ export interface InteractionState {
   gameStatus: ReturnType<typeof getGameStatus>; // stato (scacco, matto, ecc.)
 }
 
-// Gestisce quando l'utente clicca sulla scacchiera
+
 export class ChessInteractionHandler {
   private game: Chess;
   private selectedSquare: string | null = null;
   private possibleMoves: string[] = [];
   private onStateChange?: (state: InteractionState) => void;
 
-  // Inizia il gioco
+  
   constructor(fen?: string, onStateChange?: (state: InteractionState) => void) {
-    if (fen) {
-      this.game = new Chess(fen);
-    } else {
-      this.game = new Chess();
-    }
+    this.game = new Chess(fen);
     if (onStateChange) {
       this.onStateChange = onStateChange;
     }
     this.updateState();
   }
 
-  // Gestisce il click su una casella
+  
   handleSquareClick(casella: string): boolean {
       // Se non ho selezionato niente
       if (this.selectedSquare === null) {
