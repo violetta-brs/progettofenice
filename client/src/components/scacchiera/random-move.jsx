@@ -2,18 +2,16 @@ import { useState } from "react";
 import { Chess } from "chess.js";
 import ChessBoard from "./chessboard";
 
-export default function CasualMove() {
+export default function RandomMove() {
     const [game, setGame] = useState(new Chess());
 
-    //creo una mossa casuale
     const makeRandomMove = (currentGame) => {
         const possibleMoves = currentGame.moves();
-        if (possibleMoves.length === 0) return; //partita finita
-
+        if (possibleMoves.length === 0) return; 
             const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
             currentGame.move(randomMove);
             setGame(new Chess(currentGame.fen()));
-    };
+        }
 
    //trascino la pedina e rilascio
    const handleMove = (source, target) => {
@@ -40,13 +38,9 @@ export default function CasualMove() {
     }
    };
 
-
    return (
-
-    <div className="casualmove-container">
+    <div className="random-move-container">
         <ChessBoard board={game.board()} onMove={handleMove} />
     </div>
-);
-
+  );
 }
-

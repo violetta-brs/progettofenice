@@ -1,3 +1,13 @@
+// Variabili scss per i colori
+$color-black: #000;
+$color-light-square: #d4a574;
+$color-dark-square: #8b5a3c;
+$border-color: $color-black;
+
+// Variabili per dimensioni
+$board-size: 37.5rem; 
+$border-width: 0.125rem; 
+
 .chessboard-container {
   display: flex;
   justify-content: center;
@@ -6,26 +16,26 @@
 }
 
 .chessboard {
-  display: flex;
-  flex-wrap: wrap;
-  width: 600px;
-  height: 600px;
-  border: 2px solid #000;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  width: $board-size;
+  height: $board-size;
+  border: $border-width solid $border-color;
 }
 
 .square {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 12.5%;        /* 100% / 8 caselle */
-  height: 12.5%;
+  aspect-ratio: 1 / 1;
 
   &.light {
-    background-color: #d4a574;
+    background-color: $color-light-square;
   }
 
   &.dark {
-    background-color: #8b5a3c;
+    background-color: $color-dark-square;
   }
 }
 
