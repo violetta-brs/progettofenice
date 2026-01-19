@@ -1,41 +1,40 @@
-import { useState } from "react"; 
+import { useState } from "react";
 import "./chessboard.scss";
 
 const isDarkSquare = (rowIndex, colIndex) => {
   return (rowIndex + colIndex) % 2 === 1;
 };
 
-export default function ChessBoard({ board, onMove }) {
-const [draggedFrom, setDraggedFrom] = useState(null);
+export default function ChessBoard({ board, onMove }: { board: any; onMove: any }) {
+  const [draggedFrom, setDraggedFrom] = useState(null);
 
-const getSquareName = (rowIndex, colIndex) => {
-  const colLetter = String.fromCharCode(97 + colIndex);
-  return `${colLetter}${8 - rowIndex}`;
-};
+  const getSquareName = (rowIndex, colIndex) => {
+    const colLetter = String.fromCharCode(97 + colIndex);
+    return `${colLetter}${8 - rowIndex}`;
+  };
 
-//inizio il trascinamento
- const handleDragStart = (e, rowIndex, colIndex) => {
-  setDraggedFrom(getSquareName(rowIndex, colIndex));
-};
+  // inizio il trascinamento
+  const handleDragStart = (e, rowIndex, colIndex) => {
+    setDraggedFrom(getSquareName(rowIndex, colIndex));
+  };
 
-  //rilascio la pedina
+  // rilascio la pedina
   const handleDrop = (e, rowIndex, colIndex) => {
     e.preventDefault();
     if (!draggedFrom) return;
 
     const targetSquare = getSquareName(rowIndex, colIndex);
-  
-      if (onMove) {
-        onMove(draggedFrom, targetSquare);
-      }
+    
+    if (onMove) {
+      onMove(draggedFrom, targetSquare);
+    }
 
-      setDraggedFrom(null);
-
+    setDraggedFrom(null);
   };
 
-       const handleDragOver = (e) => {
-      e.preventDefault();
-    };
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
 
   const pieceImages = {
     w: {

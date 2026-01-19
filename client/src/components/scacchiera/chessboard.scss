@@ -20,7 +20,7 @@ $border-width: 0.125rem;
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(8, 1fr);
   width: $board-size;
-  height: $board-size;
+  aspect-ratio: 1 / 1;
   border: $border-width solid $border-color;
 }
 
