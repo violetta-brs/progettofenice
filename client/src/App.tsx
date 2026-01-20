@@ -1,12 +1,11 @@
-import React from "react";
-import RandomMove from "./components/scacchiera/random-move";
 import "./App.scss";
+import MoveHandler from "./components/scacchiera/move-handler.tsx";
 
 function App() {
   return (
     <div className="app-container">
       <h1>La mia App di Scacchi</h1>
-      <RandomMove />
+      <MoveHandler />
     </div>
   );
 }

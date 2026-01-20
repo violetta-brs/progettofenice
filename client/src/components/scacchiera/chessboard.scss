@@ -5,15 +5,8 @@ $color-dark-square: #8b5a3c;
 $border-color: $color-black;
 
 // Variabili per dimensioni
-$board-size: 37.5rem; 
-$border-width: 0.125rem; 
-
-.chessboard-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
+$board-size: 37.5rem;
+$border-width: 0.125rem;
 
 .chessboard {
   display: grid;
