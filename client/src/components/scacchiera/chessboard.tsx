@@ -1,7 +1,7 @@
 import type { Square } from "chess.js";
 import { useState, type DragEvent } from "react";
 import type { ChessJsBoard, SquareState } from "../../types.ts";
-import { ChessPiece } from "./chess-piece.tsx";
+import { ChessPiece } from "./chess-piece";
 import "./chessboard.scss";
 
 const isDarkSquare = (rowIndex: number, colIndex: number) => {

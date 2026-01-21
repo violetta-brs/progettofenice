@@ -1,8 +1,8 @@
 import { Chess, QUEEN, type Move, type Square } from "chess.js";
 import { useState } from "react";
-import { Strategy } from "../../types.ts";
-import { randomChoice } from "../../utils.ts";
-import ChessBoard from "./chessboard.tsx";
+import type { Strategy } from "../../types";
+import { randomChoice } from "../../utils";
+import ChessBoard from "./chessboard";
 
 const randomStrategy: Strategy = (moves) => {
   return randomChoice(moves);
