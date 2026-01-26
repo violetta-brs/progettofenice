@@ -1,19 +1,19 @@
 import type { Square } from 'chess.js';
 import { Chess } from 'chess.js';
-import { getGameStatus, getPossibleMoves, makeMove, makeRandomMove, type MoveResult } from '../../server/moveHandler.js';
+import { getPossibleMoves, makeMove, makeRandomMove } from '../../server/moveHandler.js';
 
 export interface InteractionState {
-  selectedSquare: string | null; // casella selezionata
-  possibleMoves: string[]; // dove posso muovermi
-  game: Chess; // il gioco
-  gameStatus: ReturnType<typeof getGameStatus>; // stato (scacco, matto, ecc.)
+  selectedSquare: Square | null;
+  possibleMoves: Square[];
+  game: Chess;
+  fen: string;
 }
 
 
 export class ChessInteractionHandler {
   private game: Chess;
-  private selectedSquare: string | null = null;
-  private possibleMoves: string[] = [];
+  private selectedSquare: Square | null = null;
+  private possibleMoves: Square[] = [];
   private onStateChange?: (state: InteractionState) => void;
 
   
@@ -26,11 +26,9 @@ export class ChessInteractionHandler {
   }
 
   
-  handleSquareClick(casella: string): boolean {
-      // Se non ho selezionato niente
+  handleSquareClick(casella: Square): boolean {
       if (this.selectedSquare === null) {
-      const pezzo = this.game.get(casella as Square);
-      // Se c'è un pezzo e è il mio turno, lo seleziono
+      const pezzo = this.game.get(casella);
       if (pezzo && pezzo.color === this.game.turn()) {
         this.selectedSquare = casella;
         this.possibleMoves = getPossibleMoves(this.game, casella);
@@ -40,7 +38,6 @@ export class ChessInteractionHandler {
       return false;
     }
 
-    // Se clicco di nuovo sulla stessa casella, deseleziono
     if (this.selectedSquare === casella) {
       this.selectedSquare = null;
       this.possibleMoves = [];
@@ -48,19 +45,19 @@ export class ChessInteractionHandler {
       return false;
     }
 
-    // Se clicco dove posso muovermi, faccio la mossa
     if (this.possibleMoves.includes(casella)) {
-      const risultato = makeMove(this.game, this.selectedSquare, casella);
-      if (risultato.success) {
+      try {
+        makeMove(this.game, this.selectedSquare, casella);
         this.selectedSquare = null;
         this.possibleMoves = [];
         this.updateState();
         return true;
+      } catch (error) {
+        return false;
       }
     }
 
-    // Se clicco su un altro mio pezzo, cambio selezione
-    const pezzo = this.game.get(casella as Square);
+    const pezzo = this.game.get(casella);
     if (pezzo && pezzo.color === this.game.turn()) {
       this.selectedSquare = casella;
       this.possibleMoves = getPossibleMoves(this.game, casella);
@@ -68,23 +65,22 @@ export class ChessInteractionHandler {
       return false;
     }
 
-    // Altrimenti deseleziono
     this.selectedSquare = null;
     this.possibleMoves = [];
     this.updateState();
     return false;
   }
 
-  // Il computer fa una mossa
-  makeComputerMove(): MoveResult {
-    const risultato = makeRandomMove(this.game);
-    if (risultato.success) {
+  makeComputerMove(): string | null {
+    try {
+      const mossa = makeRandomMove(this.game);
       this.updateState();
+      return mossa;
+    } catch (error) {
+      return null;
     }
-    return risultato;
   }
 
-  // Ricomincia da capo
   resetGame() {
     this.game.reset();
     this.selectedSquare = null;
@@ -92,7 +88,6 @@ export class ChessInteractionHandler {
     this.updateState();
   }
 
-  // Carica una posizione
   loadFen(fen: string) {
     try {
       this.game.load(fen);
@@ -104,35 +99,30 @@ export class ChessInteractionHandler {
     }
   }
 
-  // Ritorna lo stato
   getState(): InteractionState {
     return {
       selectedSquare: this.selectedSquare,
       possibleMoves: this.possibleMoves,
       game: this.game,
-      gameStatus: getGameStatus(this.game)
+      fen: this.game.fen()
     };
   }
 
-  // Aggiorna lo stato
   private updateState() {
     if (this.onStateChange) {
       this.onStateChange(this.getState());
     }
   }
 
-  // Ritorna il gioco
   getGame(): Chess {
     return this.game;
   }
 
-  // Controlla se una casella è selezionata
-  isSquareSelected(casella: string): boolean {
+  isSquareSelected(casella: Square): boolean {
     return this.selectedSquare === casella;
   }
 
-  // Controlla se posso muovermi lì
-  isPossibleMove(casella: string): boolean {
+  isPossibleMove(casella: Square): boolean {
     return this.possibleMoves.includes(casella);
   }
 }

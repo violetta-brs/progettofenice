@@ -1,119 +1,72 @@
 import { Chess, Square } from 'chess.js';
 
-// Quando faccio una mossa, questa è la risposta che ottengo
-export interface MoveResult {
-  success: boolean; // true = mossa fatta, false = errore
-  move: string | null; // la mossa (es. "e4") oppure null
-  error?: string; // messaggio di errore se qualcosa va storto
-  fen?: string; // la posizione della scacchiera
+export class NoMovesAvailableError extends Error {
+  constructor() {
+    super('Nessuna mossa disponibile');
+    this.name = 'NoMovesAvailableError';
+  }
 }
 
-// Fa una mossa a caso
-export function makeRandomMove(game: Chess): MoveResult {
-  // Prendo tutte le mosse che posso fare
+export class InvalidMoveError extends Error {
+  constructor() {
+    super('Mossa non valida');
+    this.name = 'InvalidMoveError';
+  }
+}
+
+export function makeRandomMove(game: Chess): string {
   const mosse = game.moves({ verbose: true });
   
-  // Se non ci sono mosse, errore
   if (mosse.length === 0) {
-    return {
-      success: false,
-      move: null,
-      error: 'Nessuna mossa disponibile',
-      fen: game.fen()
-    };
+    throw new NoMovesAvailableError();
   }
 
-  // Scelgo un numero a caso
   const numero = Math.floor(Math.random() * mosse.length);
   const mossa = mosse[numero];
 
-  // Faccio la mossa
   const risultato = game.move({
     from: mossa.from,
     to: mossa.to,
     promotion: mossa.promotion
   });
 
-  // Se è andata bene
-  if (risultato) {
-    return {
-      success: true,
-      move: risultato.san,
-      fen: game.fen()
-    };
+  if (!risultato) {
+    throw new InvalidMoveError();
   }
 
-  // Se non è andata bene
-  return {
-    success: false,
-    move: null,
-    error: 'Mossa non valida',
-    fen: game.fen()
-  };
+  return risultato.san;
 }
 
-// Controlla se posso fare una mossa
-export function isValidMove(game: Chess, da: string, a: string): boolean {
-  // Provo a fare la mossa
+export function isValidMove(game: Chess, da: Square, a: Square): boolean {
   const mossa = game.move({
-    from: da as Square,
-    to: a as Square
+    from: da,
+    to: a
   });
   
-  // Se funziona, la annullo e dico che è valida
   if (mossa) {
     game.undo();
     return true;
   }
   
-  // Se non funziona, non è valida
   return false;
 }
 
-// Fa una mossa
-export function makeMove(game: Chess, da: string, a: string, promozione?: string): MoveResult {
-  // Provo a fare la mossa
+export function makeMove(game: Chess, da: Square, a: Square, promozione?: string): string {
   const risultato = game.move({
-    from: da as Square,
-    to: a as Square,
+    from: da,
+    to: a,
     promotion: promozione as any
   });
 
-  // Se è andata bene
-  if (risultato) {
-    return {
-      success: true,
-      move: risultato.san,
-      fen: game.fen()
-    };
+  if (!risultato) {
+    throw new InvalidMoveError();
   }
 
-  // Se non è andata bene
-  return {
-    success: false,
-    move: null,
-    error: 'Mossa non valida',
-    fen: game.fen()
-  };
+  return risultato.san;
 }
 
-// Dice dove può andare un pezzo
-export function getPossibleMoves(game: Chess, casella: string): string[] {
-  // Prendo tutte le mosse da quella casella
-  const mosse = game.moves({ square: casella as Square, verbose: true });
-  // Ritorno solo le caselle di destinazione
-  return mosse.map((m: { to: string }) => m.to);
-}
-// Dice come sta il gioco
-export function getGameStatus(game: Chess) {
-  return {
-    isCheck: game.isCheck(), // scacco?
-    isCheckmate: game.isCheckmate(), // scacco matto?
-    isStalemate: game.isStalemate(), // patta?
-    isDraw: game.isDraw(), // patta?
-    isGameOver: game.isGameOver(), // finito?
-    turn: game.turn(), // chi muove? 'w' o 'b'
-    fen: game.fen() // posizione
-  };
+export function getPossibleMoves(game: Chess, casella: Square): Square[] {
+  const mosse = game.moves({ square: casella, verbose: true });
+  return mosse.map((m) => m.to as Square);
 }
 
