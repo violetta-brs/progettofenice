@@ -26,9 +26,23 @@ export class ChessInteractionHandler {
   }
 
   
+  handleDragDrop(from: Square, to: Square): boolean {
+    const pezzo = this.game.get(from);
+    if (!pezzo || pezzo.color !== this.game.turn()) {
+      return false;
+    }
+    const risultato = makeMove(this.game, from, to);
+    if (risultato.success) {
+      this.selectedSquare = null;
+      this.possibleMoves = [];
+      this.updateState();
+      return true;
+    }
+    return false;
+  }
+
   handleSquareClick(casella: string): boolean {
-      // Se non ho selezionato niente
-      if (this.selectedSquare === null) {
+    if (this.selectedSquare === null) {
       const pezzo = this.game.get(casella as Square);
       // Se c'è un pezzo e è il mio turno, lo seleziono
       if (pezzo && pezzo.color === this.game.turn()) {
