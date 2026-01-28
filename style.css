@@ -1,0 +1,59 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: #f0f0f0;
+}
+
+h1 {
+  margin: 20px;
+}
+
+#turno {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+#messaggio {
+  font-size: 16px;
+  color: red;
+  margin-bottom: 10px;
+}
+
+#scacchiera {
+  display: grid;
+  grid-template-columns: repeat(8, 60px);
+  grid-template-rows: repeat(8, 60px);
+  margin: 20px auto;
+  border: 2px solid #333;
+}
+
+.casella {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.casella.bianca {
+  background-color: #eee;
+}
+
+.casella.nera {
+  background-color: #888;
+}
+
+.casella.selezionata {
+  outline: 3px solid #f00;
+}
+
+.casella.possibile {
+  outline: 3px solid #0f0;
+}
+
+.casella.scacco {
+  background-color: #f99 !important;
+}
