@@ -7,3 +7,4 @@ export type SquareState = {
 };
 export type ChessJsBoard = (SquareState | null)[][];
 export type Strategy = (moves: Move[]) => Move;
+export type PlayerColor = "w" | "b";

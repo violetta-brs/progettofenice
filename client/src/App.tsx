@@ -1,11 +1,11 @@
 import "./App.scss";
-import MoveHandler from "./components/scacchiera/move-handler.tsx";
+import GameModeSelector from "./components/scacchiera/select-game.tsx";
 
 function App() {
   return (
     <div className="app-container">
       <h1>La mia App di Scacchi</h1>
-      <MoveHandler />
+    <GameModeSelector />
     </div>
   );
 }

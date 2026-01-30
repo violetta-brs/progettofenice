@@ -1,8 +1,12 @@
 // Variabili scss per i colori
-$color-black: #000;
+$color-black-dark: #000;
+$color-black-medium: #111;
+$color-black-lighter: #222;
+$color-gray: #555;
 $color-light-square: #d4a574;
 $color-dark-square: #8b5a3c;
-$border-color: $color-black;
+$color-white: #fff;
+$border-color: $color-black-dark;
 
 // Variabili per dimensioni
 $board-size: 37.5rem;
@@ -35,4 +39,65 @@ $border-width: 0.125rem;
 .piece {
   width: 80%;
   height: 80%;
+}
+
+.select-layout {
+  max-width: 22rem;
+  margin: 0 auto;
+}
+
+.select-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.select-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.select-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 18rem;
+}
+
+.select-label {
+  font-size: 0.9rem;
+  color: $color-gray;
+}
+
+.select-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.select-btn {
+  padding: 0.6rem 0.9rem;
+  font-size: 0.95rem;
+  border-radius: 0.5rem;
+  border: 1px solid $color-black-lighter;
+  background: $color-black-medium;
+  color: $color-white;
+  cursor: pointer;
+  width: 100%;
+}
+
+.select-btn-back {
+  background: transparent;
+  color: $color-black-medium;
+}
+
+.timer-display {
+  display: flex;
+  gap: 2.6rem;
+  margin: 2rem 0;
+}
+
+.game-over {
+  margin-bottom: 2rem;
 }

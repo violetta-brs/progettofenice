@@ -1,6 +1,6 @@
 import type { Square } from "chess.js";
 import { useState, type DragEvent } from "react";
-import type { ChessJsBoard, SquareState } from "../../types.ts";
+import type { ChessJsBoard, SquareState, PlayerColor } from "../../types.ts";
 import { ChessPiece } from "./chess-piece.tsx";
 import "./chessboard.scss";
 
@@ -16,16 +16,22 @@ const getSquareName = (rowIndex: number, colIndex: number): Square => {
 export default function ChessBoard({
   board,
   onMove,
+  activeColor,
+  mode,
+  playerColor,
 }: {
   board: ChessJsBoard;
   onMove: (source: Square, target: Square) => void;
+  activeColor: PlayerColor;
+  mode: "player-vs-computer" | "player-vs-player";
+  playerColor: PlayerColor;
 }) {
   const [draggedFrom, setDraggedFrom] = useState<Square | null>(null);
 
   const handleDragStart = (
     _: DragEvent,
     rowIndex: number,
-    colIndex: number,
+    colIndex: number
   ) => {
     setDraggedFrom(getSquareName(rowIndex, colIndex));
   };
@@ -39,7 +45,6 @@ export default function ChessBoard({
     if (onMove) {
       onMove(draggedFrom, targetSquare);
     }
-
     setDraggedFrom(null);
   };
 
@@ -49,7 +54,9 @@ export default function ChessBoard({
         row.map((squareContent: SquareState | null, colIndex: number) => (
           <div
             key={`${rowIndex}-${colIndex}`}
-            className={`square ${isDarkSquare(rowIndex, colIndex) ? "dark" : "light"}`}
+            className={`square ${
+              isDarkSquare(rowIndex, colIndex) ? "dark" : "light"
+            }`}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => handleDrop(e, rowIndex, colIndex)}
           >
@@ -57,13 +64,16 @@ export default function ChessBoard({
               <ChessPiece
                 pieceSymbol={squareContent.type}
                 pieceColor={squareContent.color}
-                onDragStart={(e: DragEvent) =>
-                  handleDragStart(e, rowIndex, colIndex)
+                draggable={
+                  mode === "player-vs-player"
+                    ? squareContent.color === activeColor
+                    : squareContent.color === playerColor && activeColor === playerColor
                 }
+                onDragStart={(e) => handleDragStart(e, rowIndex, colIndex)}
               />
             )}
           </div>
-        )),
+        ))
       )}
     </div>
   );
