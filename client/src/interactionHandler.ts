@@ -1,7 +1,13 @@
 import type { Square } from 'chess.js';
 import { Chess } from 'chess.js';
 import { postMove, postRandomMove } from './chessApi.js';
-import { getPossibleMoves } from './chessUtils.js';
+import { getPossibleMoves, isPromotionMove } from './chessUtils.js';
+
+export type PromotionPiece = 'q' | 'r' | 'b' | 'n';
+
+export type SquareClickResult =
+  | { promotionRequired: true; from: Square; to: Square }
+  | { promotionRequired: false };
 
 export interface InteractionState {
   selectedSquare: Square | null;
@@ -24,12 +30,8 @@ export class ChessInteractionHandler {
     this.updateState();
   }
 
-  async handleDragDrop(from: Square, to: Square): Promise<boolean> {
-    const pezzo = this.game.get(from);
-    if (!pezzo || pezzo.color !== this.game.turn()) {
-      return false;
-    }
-    const res = await postMove(this.game.fen(), from, to);
+  async completeMove(from: Square, to: Square, promotion?: PromotionPiece): Promise<boolean> {
+    const res = await postMove(this.game.fen(), from, to, promotion);
     if (res.success && res.fen) {
       this.game.load(res.fen);
       this.selectedSquare = null;
@@ -40,28 +42,41 @@ export class ChessInteractionHandler {
     return false;
   }
 
-  handleSquareClick(casella: Square): boolean {
+  async handleDragDrop(from: Square, to: Square, promotion?: PromotionPiece): Promise<boolean> {
+    const pezzo = this.game.get(from);
+    if (!pezzo || pezzo.color !== this.game.turn()) {
+      return false;
+    }
+    return this.completeMove(from, to, promotion);
+  }
+
+  handleSquareClick(casella: Square): SquareClickResult {
     if (this.selectedSquare === null) {
       const pezzo = this.game.get(casella);
       if (pezzo && pezzo.color === this.game.turn()) {
         this.selectedSquare = casella;
         this.possibleMoves = getPossibleMoves(this.game.fen(), casella);
         this.updateState();
-        return false;
+        return { promotionRequired: false };
       }
-      return false;
+      return { promotionRequired: false };
     }
 
     if (this.selectedSquare === casella) {
       this.selectedSquare = null;
       this.possibleMoves = [];
       this.updateState();
-      return false;
+      return { promotionRequired: false };
     }
 
     if (this.possibleMoves.includes(casella)) {
-      void this.applyMoveFromClick(this.selectedSquare, casella);
-      return true;
+      const from = this.selectedSquare;
+      const to = casella;
+      if (isPromotionMove(this.game.fen(), from, to)) {
+        return { promotionRequired: true, from, to };
+      }
+      void this.applyMoveFromClick(from, to);
+      return { promotionRequired: false };
     }
 
     const pezzo = this.game.get(casella);
@@ -69,23 +84,17 @@ export class ChessInteractionHandler {
       this.selectedSquare = casella;
       this.possibleMoves = getPossibleMoves(this.game.fen(), casella);
       this.updateState();
-      return false;
+      return { promotionRequired: false };
     }
 
     this.selectedSquare = null;
     this.possibleMoves = [];
     this.updateState();
-    return false;
+    return { promotionRequired: false };
   }
 
   private async applyMoveFromClick(from: Square, to: Square): Promise<void> {
-    const res = await postMove(this.game.fen(), from, to);
-    if (res.success && res.fen) {
-      this.game.load(res.fen);
-      this.selectedSquare = null;
-      this.possibleMoves = [];
-      this.updateState();
-    }
+    await this.completeMove(from, to);
   }
 
   async makeComputerMove(): Promise<string | null> {

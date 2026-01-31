@@ -29,12 +29,13 @@ interface ChessBoardProps {
   board: (Piece | null)[][];
   selectedSquare: Square | null;
   possibleMoves: Square[];
+  onSquareClick?: (squareName: Square) => void;
   onDragStart?: (e: React.DragEvent, squareName: Square) => void;
   onDrop?: (e: React.DragEvent, squareName: Square) => void;
   onDragOver?: (e: React.DragEvent) => void;
 }
 
-export default function ChessBoard({ board, selectedSquare, possibleMoves, onDragStart, onDrop, onDragOver }: ChessBoardProps) {
+export default function ChessBoard({ board, selectedSquare, possibleMoves, onSquareClick, onDragStart, onDrop, onDragOver }: ChessBoardProps) {
   const boardArray = useMemo(() => {
     return board.map((row, rowIndex) =>
       row.map((square, colIndex) => ({
@@ -60,6 +61,7 @@ export default function ChessBoard({ board, selectedSquare, possibleMoves, onDra
               <div
                 key={`${rowIndex}-${colIndex}`}
                 className={`square ${isDarkSquare ? 'dark' : 'light'} ${isSelected ? 'selected' : ''} ${isPossibleMove ? 'possible-move' : ''}`}
+                onClick={() => onSquareClick && onSquareClick(squareName)}
                 onDragOver={onDragOver}
                 onDrop={(e) => onDrop && onDrop(e, squareName)}
               >
