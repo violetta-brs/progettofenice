@@ -9,6 +9,20 @@ import { makeMove, makeRandomMove } from "./moveHandler";
 
 const app = express();
 
+const corsOrigin = process.env.CORS_ORIGIN || "*";
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", corsOrigin);
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (corsOrigin !== "*") {
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  }
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 app.use(express.json());
 
 app.post("/api/register", async (req: Request, res: Response) => {

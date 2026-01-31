@@ -1,11 +1,3 @@
-/**
- * Script per fare richieste al server usando ts-node
- * Esegui con: npx ts-node client/src/request.ts
- */
-
-// Usa fetch nativo di Node.js (disponibile da Node 18+)
-// Se usi Node < 18, installa: npm install node-fetch @types/node-fetch
-
 const API_URL = process.env.API_URL || 'http://localhost:3000';
 
 async function makeRequest() {
@@ -13,14 +5,12 @@ async function makeRequest() {
   console.log(`URL: ${API_URL}\n`);
 
   try {
-    // GET request
     console.log('1. GET /api/test');
     const response = await fetch(`${API_URL}/`);
     const text = await response.text();
     console.log(`Status: ${response.status}`);
     console.log(`Risposta: ${text}\n`);
 
-    // GET /api/test se esiste
     console.log('2. GET /api/test');
     try {
       const testResponse = await fetch(`${API_URL}/api/test`);
@@ -42,6 +32,5 @@ async function makeRequest() {
   }
 }
 
-// Esegui la richiesta
 makeRequest();
 
