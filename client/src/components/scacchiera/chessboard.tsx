@@ -1,6 +1,13 @@
 import type { Square } from "chess.js";
 import { useState, type DragEvent } from "react";
-import type { ChessJsBoard, SquareState, PlayerColor } from "../../types.ts";
+import type {
+  GameMode,
+  ChessJsBoard,
+  SquareState,
+  PlayerColor,
+  ChessTurn,
+} from "../../types.ts";
+import { toChessTurn } from "../../types.ts";
 import { ChessPiece } from "./chess-piece.tsx";
 import "./chessboard.scss";
 
@@ -22,16 +29,17 @@ export default function ChessBoard({
 }: {
   board: ChessJsBoard;
   onMove: (source: Square, target: Square) => void;
-  activeColor: PlayerColor;
-  mode: "player-vs-computer" | "player-vs-player";
+  activeColor: ChessTurn;
+  mode: GameMode;
   playerColor: PlayerColor;
 }) {
   const [draggedFrom, setDraggedFrom] = useState<Square | null>(null);
+  const playerTurn = toChessTurn(playerColor); 
 
   const handleDragStart = (
     _: DragEvent,
     rowIndex: number,
-    colIndex: number
+    colIndex: number,
   ) => {
     setDraggedFrom(getSquareName(rowIndex, colIndex));
   };
@@ -60,14 +68,14 @@ export default function ChessBoard({
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => handleDrop(e, rowIndex, colIndex)}
           >
-            {squareContent && (
+         {squareContent && (
               <ChessPiece
                 pieceSymbol={squareContent.type}
                 pieceColor={squareContent.color}
                 draggable={
                   mode === "player-vs-player"
                     ? squareContent.color === activeColor
-                    : squareContent.color === playerColor && activeColor === playerColor
+                    : squareContent.color === playerTurn && activeColor === playerTurn
                 }
                 onDragStart={(e) => handleDragStart(e, rowIndex, colIndex)}
               />
@@ -78,3 +86,4 @@ export default function ChessBoard({
     </div>
   );
 }
+

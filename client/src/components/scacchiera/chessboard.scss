@@ -41,57 +41,58 @@ $border-width: 0.125rem;
   height: 80%;
 }
 
-.select-layout {
-  max-width: 22rem;
-  margin: 0 auto;
-}
-
-.select-sidebar {
+.select {
+  max-width: 26rem;       
+  margin: 0;              
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
+
+  h2 {
+    font-size: 1.6rem;   
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+  }
+
+  span {
+    font-size: 1.05rem; 
+    font-weight: 500;
+    color: $color-gray;
+  }
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;         
+    width: 100%;
+  }
+
+  button {
+    display: block;
+    width: 100%;
+    padding: 0.9rem 1.1rem; 
+    font-size: 1.05rem;
+    border-radius: 0.8rem;
+    border: 1px solid $color-black-lighter;
+    background: $color-black-medium;
+    color: $color-white;
+    cursor: pointer;
+  }
 }
 
-.select-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.select-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  width: 18rem;
-}
-
-.select-label {
-  font-size: 0.9rem;
-  color: $color-gray;
-}
-
-.select-row {
+.row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  width: 100%;
+  gap: 1rem;             
 }
 
-.select-btn {
-  padding: 0.6rem 0.9rem;
-  font-size: 0.95rem;
-  border-radius: 0.5rem;
-  border: 1px solid $color-black-lighter;
-  background: $color-black-medium;
-  color: $color-white;
-  cursor: pointer;
-  width: 100%;
-}
-
-.select-btn-back {
+.back {
   background: transparent;
   color: $color-black-medium;
+  border: 1px solid $color-black-lighter;
 }
 
+/* TIMER / GAME OVER */
 .timer-display {
   display: flex;
   gap: 2.6rem;

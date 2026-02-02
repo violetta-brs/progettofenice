@@ -1,8 +1,6 @@
 import { useState } from "react";
 import MoveHandler from "./move-handler";
-
-type GameMode = "player-vs-computer" | "player-vs-player";
-type PlayerColor = "w" | "b";
+import type { GameMode, PlayerColor } from "../../types";
 
 export default function GameModeSelector() {
   const [mode, setMode] = useState<GameMode | null>(null);
@@ -22,60 +20,38 @@ export default function GameModeSelector() {
     );
   }
   return (
-    <div className="select-layout">
-      <div className="select-sidebar">
-        <div className="select-title">Setup partita</div>
+  <div className="select">
+    <h2>Setup partita</h2>
 
-        {!mode && (
-          <div className="select-section">
-            <div className="select-label">Modalità:</div>
+    {!mode && (
+      <div>
+        <span>Modalità:</span>
 
-            <button
-              className="select-btn"
-              onClick={() => setMode("player-vs-computer")}
-            >
-              Vs computer
-            </button>
+        <button onClick={() => setMode("player-vs-computer")}>
+          Vs computer
+        </button>
 
-            <button
-              className="select-btn"
-              onClick={() => setMode("player-vs-player")}
-            >
-              2 giocatori
-            </button>
-          </div>
-        )}
-        {mode && !playerColor && (
-          <div className="select-section">
-            <div className="select-label">Colore:</div>
-
-            <div className="select-row">
-              <button
-                className="select-btn"
-                onClick={() => setPlayerColor("w")}
-              >
-                Bianco
-              </button>
-              <button
-                className="select-btn"
-                onClick={() => setPlayerColor("b")}
-              >
-                Nero
-              </button>
-            </div>
-
-            <button
-              className="select-btn select-btn-back"
-              onClick={() => {
-                setMode(null);
-                setPlayerColor(null);
-              }}
-            >
-              Indietro
-            </button>
-          </div>
-        )}
+        <button onClick={() => setMode("player-vs-player")}>
+          2 giocatori
+        </button>
       </div>
-    </div>
-  );
+    )}
+
+    {mode && !playerColor && (
+      <div>
+        <span>Colore:</span>
+
+        <div className="row">
+          <button onClick={() => setPlayerColor("WHITE")}>Bianco</button>
+          <button onClick={() => setPlayerColor("BLACK")}>Nero</button>
+        </div>
+
+        <button className="back" onClick={backToSetup}>
+          Indietro
+        </button>
+      </div>
+    )}
+  </div>
+);
+
 }

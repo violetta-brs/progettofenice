@@ -5,7 +5,7 @@ function App() {
   return (
     <div className="app-container">
       <h1>La mia App di Scacchi</h1>
-    <GameModeSelector />
+    <GameModeSelector/>
     </div>
   );
 }

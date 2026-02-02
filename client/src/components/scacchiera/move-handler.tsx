@@ -1,10 +1,9 @@
 import { Chess, QUEEN, type Move, type Square } from "chess.js";
-import { useEffect, useMemo, useState } from "react";
-import type { Strategy, PlayerColor } from "../../types.ts";
-import { randomChoice } from "../../utils.ts";
-import ChessBoard from "./chessboard.tsx";
-
-type GameMode = "player-vs-computer" | "player-vs-player";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import type { GameMode, Strategy, PlayerColor, ChessTurn } from "../../types";
+import { fromChessTurn, toChessTurn } from "../../types";
+import { randomChoice } from "../../utils";
+import ChessBoard from "./chessboard";
 
 type MoveHandlerProps = {
   mode: GameMode;
@@ -12,114 +11,215 @@ type MoveHandlerProps = {
   onExitToSetup: () => void;
 };
 
+const INITIAL_SECONDS = 5 * 60;
 const randomStrategy: Strategy = (moves) => randomChoice(moves);
 
-const INITIAL_SECONDS = 5 * 60;
-
 const formatTime = (totalSeconds: number) => {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
+  const s = Math.max(0, totalSeconds);
+  const minutes = Math.floor(s / 60);
+  const seconds = s % 60;
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 };
 
-export default function MoveHandler({
-  mode,
-  playerColor,
-  onExitToSetup,
-}: MoveHandlerProps) {
+const opposite = (c: PlayerColor): PlayerColor => (c === "WHITE" ? "BLACK" : "WHITE");
+
+export default function MoveHandler({ mode, playerColor, onExitToSetup }: MoveHandlerProps) {
   const [fen, setFen] = useState(new Chess().fen());
 
   const [whiteSeconds, setWhiteSeconds] = useState(INITIAL_SECONDS);
   const [blackSeconds, setBlackSeconds] = useState(INITIAL_SECONDS);
-  const [isGameOver, setIsGameOver] = useState(false);
-  const [gameOverMessage, setGameOverMessage] = useState<string | null>(null);
+
+  const [timeoutWinner, setTimeoutWinner] = useState<PlayerColor | null>(null);
+
+  const activeDeadlineRef = useRef<number | null>(null);
+  const timeoutRef = useRef<number | null>(null);
+  const renderTimeoutRef = useRef<number | null>(null);
+
+  // forza re-render per aggiornare il display del timer
+  const [, forceRender] = useState(0);
 
   const game = useMemo(() => new Chess(fen), [fen]);
-  const activeColor = game.turn();
+  const activeTurn: ChessTurn = game.turn();
+  const activeColor: PlayerColor = fromChessTurn(activeTurn);
   const board = game.board();
 
-  const makeMove = (
-    currentGame: Chess,
-    moveChoiceStrategy: (choices: Move[]) => Move = randomStrategy
-  ): void => {
-    const possibleMoves = currentGame.moves({ verbose: true });
-    if (possibleMoves.length === 0) return;
-    currentGame.move(moveChoiceStrategy(possibleMoves));
+  const isBoardGameOver =
+    typeof game.isGameOver === "function" ? game.isGameOver() : (game as any).game_over();
+  const isGameOver = isBoardGameOver || timeoutWinner !== null;
+
+  const clearTimeoutSafe = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
+
+  const clearRenderTimeoutSafe = () => {
+    if (renderTimeoutRef.current) {
+      clearTimeout(renderTimeoutRef.current);
+      renderTimeoutRef.current = null;
+    }
+  };
+
+  const getStored = (c: PlayerColor) => (c === "WHITE" ? whiteSeconds : blackSeconds);
+
+  // Calcola i secondi mostrati
+  const getShown = (c: PlayerColor) => {
+    const stored = getStored(c);
+    if (isGameOver) return stored;
+
+    if (c !== activeColor) return stored;
+
+    const deadline = activeDeadlineRef.current;
+    if (!deadline) return stored;
+
+    const ms = deadline - Date.now();
+    return Math.max(0, Math.floor(ms / 1000));
+  };
+
+  // salva il tempo rimanente nel turno attivo
+  const commitActiveTime = () => {
+    const deadline = activeDeadlineRef.current;
+    if (!deadline) return;
+
+    const remaining = Math.max(0, Math.floor((deadline - Date.now()) / 1000));
+
+    if (activeColor === "WHITE") setWhiteSeconds(remaining);
+    else setBlackSeconds(remaining);
+  };
+
+  // schedula il prossimo aggiornamento del timer
+  const scheduleNextRender = () => {
+    if (isGameOver) return;
+
+    clearRenderTimeoutSafe();
+
+    const deadline = activeDeadlineRef.current;
+    if (!deadline) return;
+
+    const now = Date.now();
+    const remaining = deadline - now;
+
+    if (remaining <= 0) {
+      return;
+    }
+
+    // remaining % 1000 quanti ms mancano al prossimo cambio di secondo
+    const msUntilNextSecond = (remaining % 1000) || 1000;
+
+    renderTimeoutRef.current = window.setTimeout(() => {
+      forceRender((n) => n + 1);
+      scheduleNextRender(); // Schedula il prossimo
+    }, msUntilNextSecond);
+  };
+
+  // Inizializza il timer quando cambia il turno
+  useLayoutEffect(() => {
+    if (isGameOver) return;
+
+    clearTimeoutSafe();
+
+    const remaining = getStored(activeColor);
+    activeDeadlineRef.current = Date.now() + remaining * 1000;
+
+    timeoutRef.current = window.setTimeout(() => {
+      setTimeoutWinner(opposite(activeColor));
+    }, remaining * 1000);
+
+    scheduleNextRender();
+
+    return () => {
+      clearTimeoutSafe();
+      clearRenderTimeoutSafe();
+    };
+  }, [fen, activeColor, isGameOver]);
+
+  useEffect(() => {
+    return () => {
+      clearTimeoutSafe();
+      clearRenderTimeoutSafe();
+    };
+  }, []);
+
+  const gameOverMessage = useMemo(() => {
+    if (timeoutWinner) {
+      return timeoutWinner === "WHITE"
+        ? "Tempo scaduto: vince il Bianco"
+        : "Tempo scaduto: vince il Nero";
+    }
+    if (!isBoardGameOver) return null;
+
+    const isCheckmate = typeof game.isCheckmate === "function" ? game.isCheckmate() : false;
+    if (isCheckmate) {
+      return fromChessTurn(game.turn()) === "WHITE"
+        ? "Scacco matto: vince il Nero"
+        : "Scacco matto: vince il Bianco";
+    }
+
+    const isStalemate = typeof game.isStalemate === "function" ? game.isStalemate() : false;
+    if (isStalemate) return "Patta per stallo";
+
+    const isDraw = typeof game.isDraw === "function" ? game.isDraw() : false;
+    if (isDraw) return "Patta";
+
+    return "Game Over";
+  }, [timeoutWinner, isBoardGameOver, fen]);
+
+  const makeMove = (currentGame: Chess) => {
+    const moves = currentGame.moves({ verbose: true }) as Move[];
+    if (moves.length === 0) return;
+    currentGame.move(randomStrategy(moves));
     setFen(currentGame.fen());
   };
 
-  // Se giochi Nero vs PC, il PC (bianco) deve iniziare
-  useEffect(() => {
-    if (mode !== "player-vs-computer") return;
-
-    const startGame = new Chess(fen);
-    const turn = startGame.turn();
-
-    if (turn !== playerColor) {
-      setTimeout(() => makeMove(startGame), 300);
-    }
-  }, []);
-
   useEffect(() => {
     if (isGameOver) return;
+    if (mode !== "player-vs-computer") return;
 
-    const id = setInterval(() => {
-      if (activeColor === "w") {
-        setWhiteSeconds((prev) => {
-          if (prev <= 1) {
-            setIsGameOver(true);
-            setGameOverMessage("Tempo scaduto: vince il Nero");
-            return 0;
-          }
-          return prev - 1;
-        });
-      } else {
-        setBlackSeconds((prev) => {
-          if (prev <= 1) {
-            setIsGameOver(true);
-            setGameOverMessage("Tempo scaduto: vince il Bianco");
-            return 0;
-          }
-          return prev - 1;
-        });
-      }
-    }, 1000);
+    const humanTurn = toChessTurn(playerColor);
+    if (game.turn() === humanTurn) return;
 
-    return () => clearInterval(id);
-  }, [activeColor, isGameOver]);
+    const id = window.setTimeout(() => {
+      commitActiveTime();
 
-  const handlePlayerMove = (source: Square, target: Square) => {
+      const g = new Chess(fen);
+      makeMove(g);
+    }, 600);
+
+    return () => clearTimeout(id);
+  }, [fen, mode, playerColor, isGameOver]);
+
+  const handlePlayerMove = (from: Square, to: Square) => {
     if (isGameOver) return;
 
     const newGame = new Chess(fen);
+    const humanTurn = toChessTurn(playerColor);
 
-    // in pvc, puoi muovere solo quando è il tuo turno
-    if (mode === "player-vs-computer" && newGame.turn() !== playerColor) return;
+    // pvc, muovi solo se è il tuo turno
+    if (mode === "player-vs-computer" && newGame.turn() !== humanTurn) return;
 
-    const move = newGame.move({
-      from: source,
-      to: target,
-      promotion: QUEEN,
-    });
-    if (!move) return;
+    // evita errori di mosse illegali
+    const legal = (newGame.moves({ square: from, verbose: true }) as any[]).some((m) => m.to === to);
+    if (!legal) return;
+
+    // salva il tempo passato nel turno
+    commitActiveTime();
+
+    const moved = newGame.move({ from, to, promotion: QUEEN });
+    if (!moved) return;
 
     setFen(newGame.fen());
-
-    // pc risponde solo in pvc
-    if (mode === "player-vs-computer") {
-      setTimeout(() => makeMove(newGame), 500);
-    }
   };
 
   return (
     <div className="move-handler-container">
-      <button className="select-btn select-btn-back" onClick={onExitToSetup}>
+      <button className="back" onClick={onExitToSetup}>
         Torna al setup
       </button>
 
       <div className="timer-display">
-        <div>Bianco: {formatTime(whiteSeconds)}</div>
-        <div>Nero: {formatTime(blackSeconds)}</div>
+        <div>Bianco: {formatTime(getShown("WHITE"))}</div>
+        <div>Nero: {formatTime(getShown("BLACK"))}</div>
       </div>
 
       {isGameOver && (
@@ -131,7 +231,7 @@ export default function MoveHandler({
       <ChessBoard
         board={board}
         onMove={handlePlayerMove}
-        activeColor={activeColor}
+        activeColor={activeTurn}
         mode={mode}
         playerColor={playerColor}
       />
