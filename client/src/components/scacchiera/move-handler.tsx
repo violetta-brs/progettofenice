@@ -1,7 +1,14 @@
 import type { Move, Color as PlayerColor, Square } from "chess.js";
 import { Chess, QUEEN } from "chess.js";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { ChessTurn, GameMode, Strategy } from "../../types";
 import {
   colorDisplayName,
@@ -144,7 +151,7 @@ export default function MoveHandler({
     };
   }, []);
 
-  const gameOverMessage = useMemo((): string => {
+  const gameOverMessage = useCallback((): string => {
     if (game.isStalemate()) return "Patta per stallo";
     if (game.isDraw()) return "Patta";
 
