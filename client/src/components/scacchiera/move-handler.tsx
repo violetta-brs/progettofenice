@@ -1,7 +1,8 @@
-import { Chess, QUEEN, type Move, type Square } from "chess.js";
+import type { Move, Color as PlayerColor, Square } from "chess.js";
+import { Chess, QUEEN } from "chess.js";
+
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import type { ChessTurn, GameMode, PlayerColor, Strategy } from "../../types";
-import { fromChessTurn, toChessTurn } from "../../types";
+import type { ChessTurn, GameMode, Strategy } from "../../types";
 import {
   colorDisplayName,
   formatTime,
@@ -40,7 +41,6 @@ export default function MoveHandler({
 
   const game = useMemo(() => new Chess(fen), [fen]);
   const activeTurn: ChessTurn = game.turn();
-  const activeColor: PlayerColor = fromChessTurn(activeTurn);
   const board = game.board();
 
   const isBoardGameOver =
@@ -64,14 +64,14 @@ export default function MoveHandler({
   };
 
   const getStored = (c: PlayerColor) =>
-    c === "WHITE" ? whiteSeconds : blackSeconds;
+    c === "w" ? whiteSeconds : blackSeconds;
 
   // Calcola i secondi mostrati
   const getShown = (c: PlayerColor) => {
     const stored = getStored(c);
     if (isGameOver) return stored;
 
-    if (c !== activeColor) return stored;
+    if (c !== activeTurn) return stored;
 
     const deadline = activeDeadlineRef.current;
     if (!deadline) return stored;
@@ -87,7 +87,7 @@ export default function MoveHandler({
 
     const remaining = Math.max(0, Math.floor((deadline - Date.now()) / 1000));
 
-    if (activeColor === "WHITE") setWhiteSeconds(remaining);
+    if (activeTurn === "w") setWhiteSeconds(remaining);
     else setBlackSeconds(remaining);
   };
 
@@ -122,11 +122,11 @@ export default function MoveHandler({
 
     clearTimeoutSafe();
 
-    const remaining = getStored(activeColor);
+    const remaining = getStored(activeTurn);
     activeDeadlineRef.current = Date.now() + remaining * 1000;
 
     timeoutRef.current = window.setTimeout(() => {
-      setTimeoutWinner(getOpponent(activeColor));
+      setTimeoutWinner(activeTurn);
     }, remaining * 1000);
 
     scheduleNextRender();
@@ -135,7 +135,7 @@ export default function MoveHandler({
       clearTimeoutSafe();
       clearRenderTimeoutSafe();
     };
-  }, [fen, activeColor, isGameOver]);
+  }, [fen, activeTurn, isGameOver]);
 
   useEffect(() => {
     return () => {
@@ -153,7 +153,7 @@ export default function MoveHandler({
     }
 
     if (game.isCheckmate()) {
-      const checkMateWinner = getOpponent(fromChessTurn(game.turn()));
+      const checkMateWinner = getOpponent(game.turn());
       return `Scacco matto: vince il ${checkMateWinner}`;
     }
 
@@ -171,8 +171,7 @@ export default function MoveHandler({
     if (isGameOver) return;
     if (mode !== "player-vs-computer") return;
 
-    const humanTurn = toChessTurn(playerColor);
-    if (game.turn() === humanTurn) return;
+    if (game.turn() === playerColor) return;
 
     const id = window.setTimeout(() => {
       commitActiveTime();
@@ -188,10 +187,9 @@ export default function MoveHandler({
     if (isGameOver) return;
 
     const newGame = new Chess(fen);
-    const humanTurn = toChessTurn(playerColor);
 
     // pvc, muovi solo se è il tuo turno
-    if (mode === "player-vs-computer" && newGame.turn() !== humanTurn) return;
+    if (mode === "player-vs-computer" && newGame.turn() !== playerColor) return;
 
     // evita errori di mosse illegali
     const legal = (
@@ -215,8 +213,8 @@ export default function MoveHandler({
       </button>
 
       <div className="timer-display">
-        <div>Bianco: {formatTime(getShown("WHITE"))}</div>
-        <div>Nero: {formatTime(getShown("BLACK"))}</div>
+        <div>Bianco: {formatTime(getShown("w"))}</div>
+        <div>Nero: {formatTime(getShown("b"))}</div>
       </div>
 
       {isGameOver && (

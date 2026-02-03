@@ -1,5 +1,4 @@
-import type { PlayerColor } from "./types";
-
+import type { Color as PlayerColor } from "chess.js";
 export function randomChoice<T>(choices: T[]): T {
   if (choices.length <= 0)
     throw "Can't make a random choice because there is no choice";
@@ -21,7 +20,7 @@ export const formatTime = (totalSeconds: number): string => {
 };
 
 export const getOpponent = (color: PlayerColor): PlayerColor =>
-  color === "WHITE" ? "BLACK" : "WHITE";
+  color === "w" ? "b" : "w";
 
 export const colorDisplayName = (color: PlayerColor): string =>
-  color === "WHITE" ? "Bianco" : "Nero";
+  color === "w" ? "Bianco" : "Nero";
