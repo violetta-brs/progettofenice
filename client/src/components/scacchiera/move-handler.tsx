@@ -2,7 +2,12 @@ import { Chess, QUEEN, type Move, type Square } from "chess.js";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ChessTurn, GameMode, PlayerColor, Strategy } from "../../types";
 import { fromChessTurn, toChessTurn } from "../../types";
-import { formatTime, getOpponent, randomChoice } from "../../utils";
+import {
+  colorDisplayName,
+  formatTime,
+  getOpponent,
+  randomChoice,
+} from "../../utils";
 import ChessBoard from "./chessboard";
 
 type MoveHandlerProps = {
@@ -139,31 +144,21 @@ export default function MoveHandler({
     };
   }, []);
 
-  const gameOverMessage = useMemo(() => {
+  const gameOverMessage = useMemo((): string => {
+    if (game.isStalemate()) return "Patta per stallo";
+    if (game.isDraw()) return "Patta";
+
     if (timeoutWinner) {
-      return timeoutWinner === "WHITE"
-        ? "Tempo scaduto: vince il Bianco"
-        : "Tempo scaduto: vince il Nero";
-    }
-    if (!isBoardGameOver) return null;
-
-    const isCheckmate =
-      typeof game.isCheckmate === "function" ? game.isCheckmate() : false;
-    if (isCheckmate) {
-      return fromChessTurn(game.turn()) === "WHITE"
-        ? "Scacco matto: vince il Nero"
-        : "Scacco matto: vince il Bianco";
+      return `Tempo scaduto vince il ${colorDisplayName(timeoutWinner)}`;
     }
 
-    const isStalemate =
-      typeof game.isStalemate === "function" ? game.isStalemate() : false;
-    if (isStalemate) return "Patta per stallo";
+    if (game.isCheckmate()) {
+      const checkMateWinner = getOpponent(fromChessTurn(game.turn()));
+      return `Scacco matto: vince il ${checkMateWinner}`;
+    }
 
-    const isDraw = typeof game.isDraw === "function" ? game.isDraw() : false;
-    if (isDraw) return "Patta";
-
-    return "Game Over";
-  }, [timeoutWinner, isBoardGameOver, fen]);
+    throw new Error("Reached unreachable code");
+  }, [timeoutWinner, fen]);
 
   const makeMove = (currentGame: Chess) => {
     const moves = currentGame.moves({ verbose: true }) as Move[];

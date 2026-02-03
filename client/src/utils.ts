@@ -1,3 +1,5 @@
+import type { PlayerColor } from "./types";
+
 export function randomChoice<T>(choices: T[]): T {
   if (choices.length <= 0)
     throw "Can't make a random choice because there is no choice";
@@ -20,3 +22,6 @@ export const formatTime = (totalSeconds: number): string => {
 
 export const getOpponent = (color: PlayerColor): PlayerColor =>
   color === "WHITE" ? "BLACK" : "WHITE";
+
+export const colorDisplayName = (color: PlayerColor): string =>
+  color === "WHITE" ? "Bianco" : "Nero";
