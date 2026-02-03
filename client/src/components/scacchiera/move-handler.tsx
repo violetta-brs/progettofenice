@@ -193,20 +193,18 @@ export default function MoveHandler({
   const handlePlayerMove = (from: Square, to: Square) => {
     if (isGameOver) return;
 
-    const newGame = new Chess(fen);
-
-    // pvc, muovi solo se è il tuo turno
-    if (mode === "player-vs-computer" && newGame.turn() !== playerColor) return;
+    // muovi solo se è il tuo turno
+    if (game.turn() !== playerColor) return;
 
     // evita errori di mosse illegali
-    const legal = (
-      newGame.moves({ square: from, verbose: true }) as any[]
-    ).some((m) => m.to === to);
+    const legal = (game.moves({ square: from, verbose: true }) as any[]).some(
+      (m) => m.to === to,
+    );
     if (!legal) return;
 
-    // salva il tempo passato nel turno
     commitActiveTime();
 
+    const newGame = new Chess(fen);
     const moved = newGame.move({ from, to, promotion: QUEEN });
     if (!moved) return;
 
