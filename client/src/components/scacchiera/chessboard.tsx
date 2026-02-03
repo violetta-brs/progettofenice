@@ -1,70 +1,85 @@
-import type { Square } from "chess.js";
-import { useState, type DragEvent } from "react";
-import type { ChessJsBoard, SquareState } from "../../types.ts";
-import { ChessPiece } from "./chess-piece";
-import "./chessboard.scss";
+import { useMemo } from 'react';
+import type { Square, Piece } from 'chess.js';
 
-const isDarkSquare = (rowIndex: number, colIndex: number) => {
-  return (rowIndex + colIndex) % 2 === 1;
+const pieceImages = {
+  w: {
+    p: '/assets/chess/w_pawn.svg',
+    r: '/assets/chess/w_rook.svg',
+    n: '/assets/chess/w_knight.svg',
+    b: '/assets/chess/w_bishop.svg',
+    q: '/assets/chess/w_queen.svg',
+    k: '/assets/chess/w_king.svg',
+  },
+  b: {
+    p: '/assets/chess/b_pawn.svg',
+    r: '/assets/chess/b_rook.svg',
+    n: '/assets/chess/b_knight.svg',
+    b: '/assets/chess/b_bishop.svg',
+    q: '/assets/chess/b_queen.svg',
+    k: '/assets/chess/b_king.svg',
+  },
 };
 
-const getSquareName = (rowIndex: number, colIndex: number): Square => {
+function getSquareName(rowIndex: number, colIndex: number): Square {
   const colLetter = String.fromCharCode(97 + colIndex);
   return `${colLetter}${8 - rowIndex}` as Square;
-};
+}
 
-export default function ChessBoard({
-  board,
-  onMove,
-}: {
-  board: ChessJsBoard;
-  onMove: (source: Square, target: Square) => void;
-}) {
-  const [draggedFrom, setDraggedFrom] = useState<Square | null>(null);
+interface ChessBoardProps {
+  board: (Piece | null)[][];
+  selectedSquare: Square | null;
+  possibleMoves: Square[];
+  onSquareClick?: (squareName: Square) => void;
+  onDragStart?: (e: React.DragEvent, squareName: Square) => void;
+  onDrop?: (e: React.DragEvent, squareName: Square) => void;
+  onDragOver?: (e: React.DragEvent) => void;
+}
 
-  const handleDragStart = (
-    _: DragEvent,
-    rowIndex: number,
-    colIndex: number,
-  ) => {
-    setDraggedFrom(getSquareName(rowIndex, colIndex));
-  };
-
-  const handleDrop = (e: DragEvent, rowIndex: number, colIndex: number) => {
-    e.preventDefault();
-    if (!draggedFrom) return;
-
-    const targetSquare = getSquareName(rowIndex, colIndex);
-
-    if (onMove) {
-      onMove(draggedFrom, targetSquare);
-    }
-
-    setDraggedFrom(null);
-  };
+export default function ChessBoard({ board, selectedSquare, possibleMoves, onSquareClick, onDragStart, onDrop, onDragOver }: ChessBoardProps) {
+  const boardArray = useMemo(() => {
+    return board.map((row, rowIndex) =>
+      row.map((square, colIndex) => ({
+        square,
+        squareName: getSquareName(rowIndex, colIndex),
+        rowIndex,
+        colIndex,
+      }))
+    );
+  }, [board]);
 
   return (
-    <div className="chessboard">
-      {board.map((row, rowIndex: number) =>
-        row.map((squareContent: SquareState | null, colIndex: number) => (
-          <div
-            key={`${rowIndex}-${colIndex}`}
-            className={`square ${isDarkSquare(rowIndex, colIndex) ? "dark" : "light"}`}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleDrop(e, rowIndex, colIndex)}
-          >
-            {squareContent && (
-              <ChessPiece
-                pieceSymbol={squareContent.type}
-                pieceColor={squareContent.color}
-                onDragStart={(e: DragEvent) =>
-                  handleDragStart(e, rowIndex, colIndex)
-                }
-              />
-            )}
-          </div>
-        )),
-      )}
+    <div className="chessboard-container">
+      <div className="chessboard">
+        {boardArray.map((row) =>
+          row.map(({ square, squareName, rowIndex, colIndex }) => {
+            const isDarkSquare = (rowIndex + colIndex) % 2 === 1;
+            const isSelected = selectedSquare === squareName;
+            const isPossibleMove = possibleMoves.includes(squareName);
+            const isDraggable = square && square.color === 'w';
+
+            return (
+              <div
+                key={`${rowIndex}-${colIndex}`}
+                className={`square ${isDarkSquare ? 'dark' : 'light'} ${isSelected ? 'selected' : ''} ${isPossibleMove ? 'possible-move' : ''}`}
+                onClick={() => onSquareClick && onSquareClick(squareName)}
+                onDragOver={onDragOver}
+                onDrop={(e) => onDrop && onDrop(e, squareName)}
+              >
+                {square && (
+                  <img
+                    src={pieceImages[square.color][square.type]}
+                    alt={`${square.color === 'w' ? 'Bianco' : 'Nero'} ${square.type}`}
+                    className="piece"
+                    draggable={isDraggable}
+                    onDragStart={(e) => onDragStart && onDragStart(e, squareName)}
+                  />
+                )}
+                {isPossibleMove && !square && <div className="move-indicator" />}
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }
