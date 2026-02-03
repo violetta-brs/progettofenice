@@ -1,6 +1,6 @@
 import { Chess, QUEEN, type Move, type Square } from "chess.js";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import type { GameMode, Strategy, PlayerColor, ChessTurn } from "../../types";
+import type { ChessTurn, GameMode, PlayerColor, Strategy } from "../../types";
 import { fromChessTurn, toChessTurn } from "../../types";
 import { randomChoice } from "../../utils";
 import ChessBoard from "./chessboard";
@@ -21,9 +21,14 @@ const formatTime = (totalSeconds: number) => {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 };
 
-const opposite = (c: PlayerColor): PlayerColor => (c === "WHITE" ? "BLACK" : "WHITE");
+const opposite = (c: PlayerColor): PlayerColor =>
+  c === "WHITE" ? "BLACK" : "WHITE";
 
-export default function MoveHandler({ mode, playerColor, onExitToSetup }: MoveHandlerProps) {
+export default function MoveHandler({
+  mode,
+  playerColor,
+  onExitToSetup,
+}: MoveHandlerProps) {
   const [fen, setFen] = useState(new Chess().fen());
 
   const [whiteSeconds, setWhiteSeconds] = useState(INITIAL_SECONDS);
@@ -44,7 +49,9 @@ export default function MoveHandler({ mode, playerColor, onExitToSetup }: MoveHa
   const board = game.board();
 
   const isBoardGameOver =
-    typeof game.isGameOver === "function" ? game.isGameOver() : (game as any).game_over();
+    typeof game.isGameOver === "function"
+      ? game.isGameOver()
+      : (game as any).game_over();
   const isGameOver = isBoardGameOver || timeoutWinner !== null;
 
   const clearTimeoutSafe = () => {
@@ -61,7 +68,8 @@ export default function MoveHandler({ mode, playerColor, onExitToSetup }: MoveHa
     }
   };
 
-  const getStored = (c: PlayerColor) => (c === "WHITE" ? whiteSeconds : blackSeconds);
+  const getStored = (c: PlayerColor) =>
+    c === "WHITE" ? whiteSeconds : blackSeconds;
 
   // Calcola i secondi mostrati
   const getShown = (c: PlayerColor) => {
@@ -105,7 +113,7 @@ export default function MoveHandler({ mode, playerColor, onExitToSetup }: MoveHa
     }
 
     // remaining % 1000 quanti ms mancano al prossimo cambio di secondo
-    const msUntilNextSecond = (remaining % 1000) || 1000;
+    const msUntilNextSecond = remaining % 1000 || 1000;
 
     renderTimeoutRef.current = window.setTimeout(() => {
       forceRender((n) => n + 1);
@@ -149,14 +157,16 @@ export default function MoveHandler({ mode, playerColor, onExitToSetup }: MoveHa
     }
     if (!isBoardGameOver) return null;
 
-    const isCheckmate = typeof game.isCheckmate === "function" ? game.isCheckmate() : false;
+    const isCheckmate =
+      typeof game.isCheckmate === "function" ? game.isCheckmate() : false;
     if (isCheckmate) {
       return fromChessTurn(game.turn()) === "WHITE"
         ? "Scacco matto: vince il Nero"
         : "Scacco matto: vince il Bianco";
     }
 
-    const isStalemate = typeof game.isStalemate === "function" ? game.isStalemate() : false;
+    const isStalemate =
+      typeof game.isStalemate === "function" ? game.isStalemate() : false;
     if (isStalemate) return "Patta per stallo";
 
     const isDraw = typeof game.isDraw === "function" ? game.isDraw() : false;
@@ -199,7 +209,9 @@ export default function MoveHandler({ mode, playerColor, onExitToSetup }: MoveHa
     if (mode === "player-vs-computer" && newGame.turn() !== humanTurn) return;
 
     // evita errori di mosse illegali
-    const legal = (newGame.moves({ square: from, verbose: true }) as any[]).some((m) => m.to === to);
+    const legal = (
+      newGame.moves({ square: from, verbose: true }) as any[]
+    ).some((m) => m.to === to);
     if (!legal) return;
 
     // salva il tempo passato nel turno
