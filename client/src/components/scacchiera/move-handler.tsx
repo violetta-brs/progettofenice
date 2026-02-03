@@ -151,7 +151,7 @@ export default function MoveHandler({
     };
   }, []);
 
-  const gameOverMessage = useCallback((): string => {
+  const getGameOverMessage = useCallback((): string => {
     if (game.isStalemate()) return "Patta per stallo";
     if (game.isDraw()) return "Patta";
 
@@ -226,7 +226,7 @@ export default function MoveHandler({
 
       {isGameOver && (
         <div className="game-over">
-          <p>{gameOverMessage ?? "Game Over"}</p>
+          <p>{getGameOverMessage() ?? "Game Over"}</p>
         </div>
       )}
 
