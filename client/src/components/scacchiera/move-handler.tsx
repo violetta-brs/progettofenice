@@ -187,7 +187,7 @@ export default function MoveHandler({
     }, 600);
 
     return () => clearTimeout(id);
-  }, [fen, mode, playerColor, isGameOver]);
+  }, [fen, mode, playerColor, timeoutWinner]);
 
   const handlePlayerMove = (from: Square, to: Square) => {
     if (isGameOver) return;
