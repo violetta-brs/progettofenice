@@ -1,6 +1,7 @@
+import type { Color as PlayerColor } from "chess.js";
 import { useState } from "react";
+import type { GameMode } from "../../types";
 import MoveHandler from "./move-handler";
-import type { GameMode, PlayerColor } from "../../types";
 
 export default function GameModeSelector() {
   const [mode, setMode] = useState<GameMode | null>(null);
@@ -20,38 +21,37 @@ export default function GameModeSelector() {
     );
   }
   return (
-  <div className="select">
-    <h2>Setup partita</h2>
+    <div className="select">
+      <h2>Setup partita</h2>
 
-    {!mode && (
-      <div>
-        <span>Modalità:</span>
+      {!mode && (
+        <div>
+          <span>Modalità:</span>
 
-        <button onClick={() => setMode("player-vs-computer")}>
-          Vs computer
-        </button>
+          <button onClick={() => setMode("player-vs-computer")}>
+            Vs computer
+          </button>
 
-        <button onClick={() => setMode("player-vs-player")}>
-          2 giocatori
-        </button>
-      </div>
-    )}
-
-    {mode && !playerColor && (
-      <div>
-        <span>Colore:</span>
-
-        <div className="row">
-          <button onClick={() => setPlayerColor("WHITE")}>Bianco</button>
-          <button onClick={() => setPlayerColor("BLACK")}>Nero</button>
+          <button onClick={() => setMode("player-vs-player")}>
+            2 giocatori
+          </button>
         </div>
+      )}
 
-        <button className="back" onClick={backToSetup}>
-          Indietro
-        </button>
-      </div>
-    )}
-  </div>
-);
+      {mode && !playerColor && (
+        <div>
+          <span>Colore:</span>
 
+          <div className="row">
+            <button onClick={() => setPlayerColor("w")}>Bianco</button>
+            <button onClick={() => setPlayerColor("b")}>Nero</button>
+          </div>
+
+          <button className="back" onClick={backToSetup}>
+            Indietro
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
