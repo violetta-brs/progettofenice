@@ -2,7 +2,7 @@ import { Chess, QUEEN, type Move, type Square } from "chess.js";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ChessTurn, GameMode, PlayerColor, Strategy } from "../../types";
 import { fromChessTurn, toChessTurn } from "../../types";
-import { randomChoice } from "../../utils";
+import { formatTime, getOpponent, randomChoice } from "../../utils";
 import ChessBoard from "./chessboard";
 
 type MoveHandlerProps = {
@@ -13,16 +13,6 @@ type MoveHandlerProps = {
 
 const INITIAL_SECONDS = 5 * 60;
 const randomStrategy: Strategy = (moves) => randomChoice(moves);
-
-const formatTime = (totalSeconds: number) => {
-  const s = Math.max(0, totalSeconds);
-  const minutes = Math.floor(s / 60);
-  const seconds = s % 60;
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-};
-
-const opposite = (c: PlayerColor): PlayerColor =>
-  c === "WHITE" ? "BLACK" : "WHITE";
 
 export default function MoveHandler({
   mode,
@@ -131,7 +121,7 @@ export default function MoveHandler({
     activeDeadlineRef.current = Date.now() + remaining * 1000;
 
     timeoutRef.current = window.setTimeout(() => {
-      setTimeoutWinner(opposite(activeColor));
+      setTimeoutWinner(getOpponent(activeColor));
     }, remaining * 1000);
 
     scheduleNextRender();
