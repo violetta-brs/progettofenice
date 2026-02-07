@@ -4,6 +4,7 @@ import type { ChessTurn, GameMode, PlayerColor, Strategy } from "../../types";
 import { fromChessTurn, toChessTurn } from "../../types";
 import { randomChoice } from "../../utils";
 import ChessBoard from "./chessboard";
+import TimerDisplay from "./timer-display";
 
 type MoveHandlerProps = {
   mode: GameMode;
@@ -11,18 +12,8 @@ type MoveHandlerProps = {
   onExitToSetup: () => void;
 };
 
-const INITIAL_SECONDS = 5 * 60;
+const INITIAL_SECONDS = 8 * 60;
 const randomStrategy: Strategy = (moves) => randomChoice(moves);
-
-const formatTime = (totalSeconds: number) => {
-  const s = Math.max(0, totalSeconds);
-  const minutes = Math.floor(s / 60);
-  const seconds = s % 60;
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-};
-
-const opposite = (c: PlayerColor): PlayerColor =>
-  c === "WHITE" ? "BLACK" : "WHITE";
 
 export default function MoveHandler({
   mode,
@@ -30,18 +21,11 @@ export default function MoveHandler({
   onExitToSetup,
 }: MoveHandlerProps) {
   const [fen, setFen] = useState(new Chess().fen());
-
   const [whiteSeconds, setWhiteSeconds] = useState(INITIAL_SECONDS);
   const [blackSeconds, setBlackSeconds] = useState(INITIAL_SECONDS);
 
-  const [timeoutWinner, setTimeoutWinner] = useState<PlayerColor | null>(null);
-
-  const activeDeadlineRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
-  const renderTimeoutRef = useRef<number | null>(null);
-
-  // forza re-render per aggiornare il display del timer
-  const [, forceRender] = useState(0);
+  const turnColorRef = useRef<PlayerColor | null>(null);
 
   const game = useMemo(() => new Chess(fen), [fen]);
   const activeTurn: ChessTurn = game.turn();
@@ -52,128 +36,104 @@ export default function MoveHandler({
     typeof game.isGameOver === "function"
       ? game.isGameOver()
       : (game as any).game_over();
+
+  const timeoutWinner: PlayerColor | null =
+    whiteSeconds <= 0 ? "BLACK" : blackSeconds <= 0 ? "WHITE" : null;
+
   const isGameOver = isBoardGameOver || timeoutWinner !== null;
 
   const clearTimeoutSafe = () => {
-    if (timeoutRef.current) {
+    if (timeoutRef.current !== null) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
-    }
-  };
-
-  const clearRenderTimeoutSafe = () => {
-    if (renderTimeoutRef.current) {
-      clearTimeout(renderTimeoutRef.current);
-      renderTimeoutRef.current = null;
     }
   };
 
   const getStored = (c: PlayerColor) =>
     c === "WHITE" ? whiteSeconds : blackSeconds;
 
-  // Calcola i secondi mostrati
-  const getShown = (c: PlayerColor) => {
-    const stored = getStored(c);
-    if (isGameOver) return stored;
+  const MIN_PC_SECONDS = 3;
 
-    if (c !== activeColor) return stored;
+  // istante T di inizio turno
+  const [turnStartedAt, setTurnStartedAt] = useState<number | null>(null); 
 
-    const deadline = activeDeadlineRef.current;
-    if (!deadline) return stored;
+  const commitActiveTimeWithMin = (minSeconds: number) => {
+    if (!turnStartedAt) return;
+    const turnColor = turnColorRef.current;
+    if (!turnColor) return;
 
-    const ms = deadline - Date.now();
-    return Math.max(0, Math.floor(ms / 1000));
-  };
-
-  // salva il tempo rimanente nel turno attivo
-  const commitActiveTime = () => {
-    const deadline = activeDeadlineRef.current;
-    if (!deadline) return;
-
-    const remaining = Math.max(0, Math.floor((deadline - Date.now()) / 1000));
-
-    if (activeColor === "WHITE") setWhiteSeconds(remaining);
-    else setBlackSeconds(remaining);
-  };
-
-  // schedula il prossimo aggiornamento del timer
-  const scheduleNextRender = () => {
-    if (isGameOver) return;
-
-    clearRenderTimeoutSafe();
-
-    const deadline = activeDeadlineRef.current;
-    if (!deadline) return;
-
+    //istante T inizio turno + tempo reale trascorso = tempo speso effettivo
     const now = Date.now();
-    const remaining = deadline - now;
+    const timeSpended = (now - turnStartedAt) / 1000;
+    const effectiveTimeSpended = Math.max(timeSpended, minSeconds);
 
-    if (remaining <= 0) {
-      return;
+    //tempo speso effettivo - tempo trascorso da inizio turno = tempo rimanente
+    if (turnColor === "WHITE") {
+      setWhiteSeconds((prev) =>
+        Math.max(0, Math.floor(prev - effectiveTimeSpended)),
+      );
+    } else {
+      setBlackSeconds((prev) =>
+        Math.max(0, Math.floor(prev - effectiveTimeSpended)),
+      );
     }
 
-    // remaining % 1000 quanti ms mancano al prossimo cambio di secondo
-    const msUntilNextSecond = remaining % 1000 || 1000;
-
-    renderTimeoutRef.current = window.setTimeout(() => {
-      forceRender((n) => n + 1);
-      scheduleNextRender(); // Schedula il prossimo
-    }, msUntilNextSecond);
+    setTurnStartedAt(now);
   };
 
-  // Inizializza il timer quando cambia il turno
+  const commitActiveTime = () => commitActiveTimeWithMin(0);
+
   useLayoutEffect(() => {
+    clearTimeoutSafe();
     if (isGameOver) return;
 
-    clearTimeoutSafe();
+    const start = Date.now();
+    setTurnStartedAt(start);
+    turnColorRef.current = activeColor;
 
     const remaining = getStored(activeColor);
-    activeDeadlineRef.current = Date.now() + remaining * 1000;
+    if (remaining <= 0) return;
 
     timeoutRef.current = window.setTimeout(() => {
-      setTimeoutWinner(opposite(activeColor));
+      const turnColor = turnColorRef.current;
+      if (!turnColor) return;
+
+      if (turnColor === "WHITE") setWhiteSeconds(0);
+      else setBlackSeconds(0);
     }, remaining * 1000);
 
-    scheduleNextRender();
-
-    return () => {
-      clearTimeoutSafe();
-      clearRenderTimeoutSafe();
-    };
+    return clearTimeoutSafe;
   }, [fen, activeColor, isGameOver]);
 
-  useEffect(() => {
-    return () => {
-      clearTimeoutSafe();
-      clearRenderTimeoutSafe();
-    };
-  }, []);
-
-  const gameOverMessage = useMemo(() => {
-    if (timeoutWinner) {
-      return timeoutWinner === "WHITE"
+  let gameOverMessage: string | null = null;
+  if (timeoutWinner) {
+    gameOverMessage =
+      timeoutWinner === "WHITE"
         ? "Tempo scaduto: vince il Bianco"
         : "Tempo scaduto: vince il Nero";
-    }
-    if (!isBoardGameOver) return null;
-
+  } else if (isBoardGameOver) {
     const isCheckmate =
-      typeof game.isCheckmate === "function" ? game.isCheckmate() : false;
-    if (isCheckmate) {
-      return fromChessTurn(game.turn()) === "WHITE"
-        ? "Scacco matto: vince il Nero"
-        : "Scacco matto: vince il Bianco";
-    }
-
+      typeof (game as any).isCheckmate === "function" &&
+      (game as any).isCheckmate();
     const isStalemate =
-      typeof game.isStalemate === "function" ? game.isStalemate() : false;
-    if (isStalemate) return "Patta per stallo";
+      typeof (game as any).isStalemate === "function" &&
+      (game as any).isStalemate();
+    const isDraw =
+      typeof (game as any).isDraw === "function" && (game as any).isDraw();
 
-    const isDraw = typeof game.isDraw === "function" ? game.isDraw() : false;
-    if (isDraw) return "Patta";
-
-    return "Game Over";
-  }, [timeoutWinner, isBoardGameOver, fen]);
+    if (isCheckmate) {
+      gameOverMessage =
+        fromChessTurn(game.turn()) === "WHITE"
+          ? "Scacco matto: vince il Nero"
+          : "Scacco matto: vince il Bianco";
+    } else if (isStalemate) {
+      gameOverMessage = "Patta per stallo";
+    } else if (isDraw) {
+      gameOverMessage = "Patta";
+    } else {
+      gameOverMessage = "Game Over";
+    }
+  }
 
   const makeMove = (currentGame: Chess) => {
     const moves = currentGame.moves({ verbose: true }) as Move[];
@@ -182,22 +142,31 @@ export default function MoveHandler({
     setFen(currentGame.fen());
   };
 
+  const pcMoveTimeoutRef = useRef<number | null>(null);
+
+  const clearPcMoveTimeoutSafe = () => {
+    if (pcMoveTimeoutRef.current !== null) {
+      clearTimeout(pcMoveTimeoutRef.current);
+      pcMoveTimeoutRef.current = null;
+    }
+  };
+
   useEffect(() => {
+    clearPcMoveTimeoutSafe();
+
     if (isGameOver) return;
     if (mode !== "player-vs-computer") return;
 
     const humanTurn = toChessTurn(playerColor);
-    if (game.turn() === humanTurn) return;
+    if (game.turn() === humanTurn) return; 
 
-    const id = window.setTimeout(() => {
-      commitActiveTime();
+    pcMoveTimeoutRef.current = window.setTimeout(() => {
+      commitActiveTimeWithMin(MIN_PC_SECONDS);
+      makeMove(new Chess(fen));
+    }, 2000);
 
-      const g = new Chess(fen);
-      makeMove(g);
-    }, 600);
-
-    return () => clearTimeout(id);
-  }, [fen, mode, playerColor, isGameOver]);
+    return clearPcMoveTimeoutSafe;
+  }, [fen, mode, playerColor, isGameOver, game]);
 
   const handlePlayerMove = (from: Square, to: Square) => {
     if (isGameOver) return;
@@ -205,16 +174,14 @@ export default function MoveHandler({
     const newGame = new Chess(fen);
     const humanTurn = toChessTurn(playerColor);
 
-    // pvc, muovi solo se è il tuo turno
     if (mode === "player-vs-computer" && newGame.turn() !== humanTurn) return;
 
-    // evita errori di mosse illegali
     const legal = (
       newGame.moves({ square: from, verbose: true }) as any[]
     ).some((m) => m.to === to);
     if (!legal) return;
 
-    // salva il tempo passato nel turno
+    // chiudo il turno prima della mossa
     commitActiveTime();
 
     const moved = newGame.move({ from, to, promotion: QUEEN });
@@ -229,10 +196,13 @@ export default function MoveHandler({
         Torna al setup
       </button>
 
-      <div className="timer-display">
-        <div>Bianco: {formatTime(getShown("WHITE"))}</div>
-        <div>Nero: {formatTime(getShown("BLACK"))}</div>
-      </div>
+      <TimerDisplay
+        whiteBase={whiteSeconds}
+        blackBase={blackSeconds}
+        activeColor={activeColor}
+        turnStartedAt={turnStartedAt}
+        isGameOver={isGameOver}
+      />
 
       {isGameOver && (
         <div className="game-over">
