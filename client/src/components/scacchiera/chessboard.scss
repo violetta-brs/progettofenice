@@ -1,0 +1,38 @@
+// Variabili scss per i colori
+$color-black: #000;
+$color-light-square: #d4a574;
+$color-dark-square: #8b5a3c;
+$border-color: $color-black;
+
+// Variabili per dimensioni
+$board-size: 37.5rem;
+$border-width: 0.125rem;
+
+.chessboard {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  width: $board-size;
+  aspect-ratio: 1 / 1;
+  border: $border-width solid $border-color;
+}
+
+.square {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 1 / 1;
+
+  &.light {
+    background-color: $color-light-square;
+  }
+
+  &.dark {
+    background-color: $color-dark-square;
+  }
+}
+
+.piece {
+  width: 80%;
+  height: 80%;
+}
