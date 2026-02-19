@@ -19,18 +19,20 @@ interface ChessPieceProps {
   pieceSymbol: PieceSymbol;
   pieceColor: PieceColor;
   onDragStart: (e: DragEvent) => void;
+  draggable: boolean;
 }
 
 export const ChessPiece: FC<ChessPieceProps> = ({
   pieceSymbol,
   pieceColor,
   onDragStart,
+  draggable,
 }) => (
   <img
     src={getPieceImageUri(pieceColor, pieceSymbol)}
     alt={`${pieceColor === WHITE ? "Bianco" : "Nero"} ${pieceSymbol}`}
     className="piece"
-    draggable={pieceColor === WHITE}
+    draggable={draggable}
     onDragStart={onDragStart}
   />
 );
