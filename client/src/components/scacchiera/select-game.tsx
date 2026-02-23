@@ -1,10 +1,11 @@
 import { useState } from "react";
 import MoveHandler from "./move-handler";
-import type { GameMode, PlayerColor } from "../../types";
+import type { GameMode } from "../../types";
+import { BLACK, WHITE, type Color } from "chess.js";
 
 export default function GameModeSelector() {
   const [mode, setMode] = useState<GameMode | null>(null);
-  const [playerColor, setPlayerColor] = useState<PlayerColor | null>(null);
+  const [playerColor, setPlayerColor] = useState<Color | null>(null);
   const backToSetup = () => {
     setMode(null);
     setPlayerColor(null);
@@ -42,8 +43,8 @@ export default function GameModeSelector() {
         <span>Colore:</span>
 
         <div className="row">
-          <button onClick={() => setPlayerColor("WHITE")}>Bianco</button>
-          <button onClick={() => setPlayerColor("BLACK")}>Nero</button>
+          <button onClick={() => setPlayerColor(WHITE)}>Bianco</button>
+          <button onClick={() => setPlayerColor(BLACK)}>Nero</button>
         </div>
 
         <button className="back" onClick={backToSetup}>

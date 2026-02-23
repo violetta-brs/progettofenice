@@ -1,5 +1,5 @@
 import "./App.scss";
-import GameModeSelector from "./components/scacchiera/select-game.tsx";
+import GameModeSelector from "./components/scacchiera/select-game";
 
 function App() {
   return (

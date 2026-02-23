@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
-import type { PlayerColor } from "../../types";
+import { BLACK, WHITE, type Color } from "chess.js";
 
 type Props = {
   whiteBase: number;
   blackBase: number;
-  activeColor: PlayerColor;
+  activeColor: Color;
   turnStartedAt: number | null;
   isGameOver: boolean;
 };
 
-const formatTime = (seconds: number) => {
-  const s = Math.max(0, seconds);
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${m}:${sec.toString().padStart(2, "0")}`;
+const formatTime = (totalSeconds: number) => {
+  const seconds = Math.max(0, totalSeconds);
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
 export default function TimerDisplay({
@@ -23,39 +24,42 @@ export default function TimerDisplay({
   turnStartedAt,
   isGameOver,
 }: Props) {
-  const [now, setNow] = useState(Date.now());
 
-  // aggiornamento istantaneo del timer all'inizio del turno
-  useEffect(() => {
-    setNow(Date.now());
-  }, [turnStartedAt, activeColor]);
-
-  // timer che si aggiorna ogni secondo / tempo reale
+  const [now, setNow] = useState(() => Date.now());
+  
+  // update 1 volta al secondo
   useEffect(() => {
     if (isGameOver) return;
 
-    const timerId = setInterval(() => {
+    setNow(Date.now());
+
+    const tickIntervalId = window.setInterval(() => {
       setNow(Date.now());
-    }, 100);
+    }, 1000);
 
-    return () => clearInterval(timerId);
-  }, [isGameOver]);
+    return () => {
+      window.clearInterval(tickIntervalId);
+    };
+  }, [isGameOver, turnStartedAt]);
 
-  const getShown = (color: PlayerColor) => {
-    const base = color === "WHITE" ? whiteBase : blackBase;
+  const getShownMs = (color: Color) => {
+    const baseMs = color === WHITE ? whiteBase : blackBase;
 
-    if (isGameOver) return base;
-    if (color !== activeColor) return base;
-    if (!turnStartedAt) return base;
+    if (isGameOver) return baseMs;
+    if (color !== activeColor) return baseMs;
+    if (turnStartedAt === null) return baseMs;
 
-    const elapsed = (now - turnStartedAt) / 1000;
-    return Math.max(0, Math.floor(base - elapsed));
+    return Math.max(0, baseMs - (now - turnStartedAt));
   };
+
+  //arrotondamento per precisione timer
+  const whiteSec = Math.ceil(getShownMs(WHITE) / 1000);
+  const blackSec = Math.ceil(getShownMs(BLACK) / 1000);
 
   return (
     <div className="timer-display">
-      <div>Bianco: {formatTime(getShown("WHITE"))}</div>
-      <div>Nero: {formatTime(getShown("BLACK"))}</div>
+      <div>Bianco: {formatTime(whiteSec)}</div>
+      <div>Nero: {formatTime(blackSec)}</div>
     </div>
   );
 }
