@@ -1,0 +1,14 @@
+{
+  "React component": {
+    "scope": "typescriptreact",
+    "prefix": "!component",
+    "body": [
+      "import type { FC } from \"react\";\n",
+      "interface ${1:component-name}Props {}\n",
+      "export const ${1:component-name}: FC<${1:component-name}Props> = () => {",
+      " return <p>New component ${1:component-name}</p>",
+      "};\n",
+    ],
+    "description": "Create a new React component",
+  },
+}
