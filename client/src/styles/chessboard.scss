@@ -1,0 +1,132 @@
+$square-light: #efe0c2;
+$square-dark: #b38b6d;
+$square-selected: rgba(255, 255, 0, 0.4);
+$square-possible: rgba(0, 128, 0, 0.35);
+$board-size: min(90vmin, 480px);
+$square-size: $board-size / 8;
+
+.chess-game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.chess-game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: $board-size;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+}
+
+.chess-game-header .controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chess-game-header .controls button {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+
+  &:hover {
+    background: #f0f0f0;
+  }
+}
+
+.chessboard-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.chessboard {
+  display: grid;
+  grid-template-columns: repeat(8, $square-size);
+  grid-template-rows: repeat(8, $square-size);
+  width: $board-size;
+  height: $board-size;
+  border: 2px solid #6b5344;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.square {
+  width: $square-size;
+  height: $square-size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+
+  &.light {
+    background-color: $square-light;
+  }
+
+  &.dark {
+    background-color: $square-dark;
+  }
+
+  &.selected {
+    background-color: $square-selected !important;
+    outline: 2px solid #d4a017;
+    outline-offset: -2px;
+  }
+
+  &.possible-move {
+    box-shadow: inset 0 0 0 2px $square-possible;
+  }
+}
+
+.square .piece {
+  width: 88%;
+  height: 88%;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+  filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3));
+  -webkit-filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.square[draggable="true"] .piece {
+  pointer-events: auto;
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.square .move-indicator {
+  width: 22%;
+  height: 22%;
+  border-radius: 50%;
+  background-color: $square-possible;
+  pointer-events: none;
+  position: absolute;
+}
+
+.chess-game-info {
+  width: 100%;
+  max-width: $board-size;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  color: #333;
+
+  p {
+    margin: 0.25rem 0;
+  }
+}

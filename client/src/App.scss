@@ -1,7 +1,15 @@
-// Variabili scss per i colori
+@import './styles/chessboard.scss';
+
 $color-black: #000;
 $color-background: #f5f5f5;
 $color-text: #333;
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
 
 .app-container {
   color: $color-black;
@@ -11,8 +19,84 @@ $color-text: #333;
 
   h1, h2 {
     text-align: center;
-    font-size: 2rem; 
+    font-size: 2rem;
     color: $color-text;
     margin-bottom: 1.875rem;
+  }
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.promotion-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.promotion-modal {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+  p {
+    margin: 0 0 1rem;
+    font-weight: 600;
+  }
+}
+
+.promotion-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  button {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #f5f5f5;
+
+    &:hover {
+      background: #e0e0e0;
+    }
   }
 }
