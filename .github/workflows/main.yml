@@ -1,14 +1,13 @@
 name: Firebase Hosting CI/CD
 
 on:
-  pull_request:
-  push:
+    push:
     branches:
       - main
 
 jobs:
   preview:
-    if: github.event_name == 'pull_request'
+    
     runs-on: ubuntu-latest
 
     steps:
