@@ -33,12 +33,7 @@ jobs:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           firebase deploy --only hosting
-
-  production:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-
-    steps:
+ steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
