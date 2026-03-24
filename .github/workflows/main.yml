@@ -2,7 +2,7 @@ name: Firebase Hosting CI/CD
 
 on:
     push:
-    branches:
+      branches:
       - main
 
 jobs:
