@@ -7,3 +7,6 @@ export type SquareState = {
 };
 export type ChessJsBoard = (SquareState | null)[][];
 export type Strategy = (moves: Move[]) => Move;
+export type GameMode = "player-vs-computer" | "player-vs-player";
+
+
